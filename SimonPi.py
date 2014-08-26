@@ -15,15 +15,31 @@
 #G5	     783.99
 #G#5/Ab5   830.61
 import os
+from socket import socket, AF_INET, SOCK_STREAM 
 import threading
 import RPi.GPIO as GPIO   
 from time import sleep as delay
 
-os.system("pd -notgui tonegenerator.pd")
+sck = socket(AF_INET, SOCK_STREAM)
 
-os.system("echo '"tone 400"' | pdsend 3000")
+
+#sck.connect(("127.0.0.1",3000))
+
+os.system("pd -nogui tonegenerator.pd &")
+print('now you wait ...........')
+delay(0.5)
+
+sck.connect(("127.0.0.1",3000))
+
+sck.send("power 1;")
+
+
+#os.system('echo "power 1;" | pdsend 3000')
 delay(1)
-os.system("echo '"tone 300"' | pdsend 3000") 
+os.system('echo "power 0;" | pdsend 3000') 
+
+os.system('sudo killall pd') 
+exit()
 
 outputs = [22,23,24,25]
 light_speed = 0.1
@@ -41,7 +57,7 @@ def playNote((f,d)):
    print(command)
    os.system(command)
 
-playNote((440,1))
+#playNote((440,1))
 
 def printFunction(channel):
    print("Button 1 pressed!")

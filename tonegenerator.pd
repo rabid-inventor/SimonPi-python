@@ -1,13 +1,21 @@
-#N canvas 0 48 1024 694 10;
+#N canvas -1 43 1024 694 10;
 #X obj 234 309 dac~;
 #X obj 251 204 osc~ 440;
 #X obj 572 145 netreceive 3000;
 #X obj 585 349 s tone;
 #X obj 218 90 r tone;
-#X obj 618 220 route tone volume;
 #X obj 695 315 s volume;
+#X obj 665 506 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 0
+300;
+#X obj 618 220 route tone volume power;
+#X obj 808 315 s power;
+#X obj 655 454 r power;
+#X msg 661 560 \; pd dsp \$1 \;;
 #X connect 1 0 0 0;
-#X connect 2 0 5 0;
+#X connect 2 0 7 0;
 #X connect 4 0 1 0;
-#X connect 5 0 3 0;
-#X connect 5 1 6 0;
+#X connect 6 0 10 0;
+#X connect 7 0 3 0;
+#X connect 7 1 5 0;
+#X connect 7 2 8 0;
+#X connect 9 0 6 0;
