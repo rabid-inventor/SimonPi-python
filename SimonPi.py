@@ -14,37 +14,40 @@
 #F#5/Gb5   739.99
 #G5	     783.99
 #G#5/Ab5   830.61
-
+import os
 import threading
 import RPi.GPIO as GPIO   
 from time import sleep as delay
+
+os.system("pd -notgui tonegenerator.pd")
+
+os.system("echo '"tone 400"' | pdsend 3000")
+delay(1)
+os.system("echo '"tone 300"' | pdsend 3000") 
 
 outputs = [22,23,24,25]
 light_speed = 0.1
 GPIO.setmode(GPIO.BCM)
 
-Notes = {a:440 , aSH:466.16 , b:493.88}
 
-print(Notes.get(aSH))
+Notes = {'a':440 , 'aSH':466.16 , 'b':493.88}
 
-Tune1 = [(a,500),(aSH,500)]
+print(Notes.get('aSH'))
+
+Tune1 = [('a',500),('aSH',500)]
+
+def playNote((f,d)):
+   command = "speaker-test -t sine  -l 1 -f " + str(f) + " -p " + str(d)
+   print(command)
+   os.system(command)
+
+playNote((440,1))
 
 def printFunction(channel):
    print("Button 1 pressed!")
    print("Note how the bouncetime affects the button press")
 
-def Beep():
-   audio=file('/dev/audio', 'wb')
-   count=0
-   while count<250:
-      beep=chr(63)+chr(63)+chr(63)+chr(63)
-      audio.write(beep)
-      beep=chr(0)+chr(0)+chr(0)+chr(0)
-      audio.write(beep)
-      count=count+1
-   audio.close()
 
-Beep()
 
 for i in range(len(outputs)):
    #GPIO.setup(outputs[i],GPIO.OUT)
@@ -55,7 +58,7 @@ for i in range(len(outputs)):
 def lights(speed):
    while 1:
       for i in range(len(outputs)):
-         Beep()
+
          GPIO.remove_event_detect(outputs[i])
          GPIO.setup(outputs[i], GPIO.OUT)
          GPIO.output(outputs[i], True)
