@@ -1,3 +1,7 @@
+#Written By Gee Bartlett 
+
+#Simon Says Mini backpack Kit For Raspberry Pi
+#Setup to use only for 4 GPIO it achieves this by reading inputs when Lights are inactive.
 
 
 
@@ -14,57 +18,61 @@
 #F#5/Gb5   739.99
 #G5	     783.99
 #G#5/Ab5   830.61
+
+#Insert Tune here  [('note',duration)]
+Tune1 = [('a',1),('a#',1)],[('b',1)]
+
 import os
 from socket import socket, AF_INET, SOCK_STREAM 
 import threading
 import RPi.GPIO as GPIO   
 from time import sleep as delay
 
+#Setup GPIO
+GPIO.setmode(GPIO.BCM)
 
+#Start socket instance 
 sck = socket(AF_INET, SOCK_STREAM)
 
-gameActive = False
-
-
+#load Pure Data with tone sketch
 print(os.system("pd -nogui tonegenerator.pd &"))
 print('now you wait ...........')
 delay(1.5)
 
+#Start socket connection for communicating with Pure Data sketch 
 sck.connect(("127.0.0.1",3000))
 
-#sck.send("power 1;")
-#os.system('echo "power 1;" | pdsend 3000')
-#delay(1)
-#os.system('echo "power 0;" | pdsend 3000') 
-#os.system('sudo killall pd') 
+#settings 
 
-outputs = [22,23,24,25]
-light_speed = 0.1
-GPIO.setmode(GPIO.BCM)
+gameActive = False
+outputs = [22,23,24,25] #GPIO ports to use Change As Required
+light_speed = 0.1 #Speed setting for intro light sequence
+
+#Lookup table for Notes to Hz
+Notes = {'a':440, 'a#':466.16, 'b':493.88, 'c': 523.25, 'c#':554.37, 'd':587.33, 'd#':622.25, 'e':659.25, 'f':698.46, 'f#':739.99, 'g':783.99, 'g#':830.61} 
+
+#Lookup for notes light location 
+Lights = {'a':outputs[0], 'a#':outputs[1], 'b':outputs[2], 'c': outputs[3], 'c#':outputs[0], 'd':outputs[1], 'd#':outputs[2], 'e':outputs[3], 'f':outputs[0], 'f#':outputs[1], 'g':outputs[2], 'g#':outputs[3]
 
 
-Notes = {'a':440 , 'aSH':466.16 , 'b':493.88}
-
-print(Notes.get('aSH'))
-
-Tune1 = [('a',500),('aSH',500)]
-
+#Send Note to Pure Data 
 def playNote((f,d)):
    sck.send("tone  " + str(f) + ";")
    sck.send("power 1;")
    delay(d)
    sck.send("power 0;")
 
+#PLay to string 
+def playTune(tune):
+   for i in range(len(Tune1)):
+      note = Tune1[i]
+      
+#Function to lookup notes hz value      
+def convertHz((f,d)):
+   f=Notes.get(f) 
+   return (f,d)
 
-
-#playNote((440,1))
-#playNote((330,1))
-
-def printFunction(channel):
-   print("Button 1 pressed!")
-   print("Note how the bouncetime affects the button press")
-
-
+print(convertHz(Tune1[0]))
 
 def button1(channel):
    print channel
@@ -91,11 +99,10 @@ def fail():
 
 
 for i in range(len(outputs)):
-   #GPIO.setup(outputs[i],GPIO.OUT)
-   GPIO.setup(outputs[i], GPIO.IN, pull_up_down = GPIO.PUD_UP)
+   PIO.setup(outputs[i], GPIO.IN, pull_up_down = GPIO.PUD_UP)
    
-#GPIO.output(22,True)
-   
+
+#button interupt activate
 def attachInt(button,IOport):
    if ( button == 0):
       GPIO.add_event_detect(IOport, GPIO.FALLING, callback=button1, bouncetime=300)
@@ -109,8 +116,10 @@ def attachInt(button,IOport):
 
 
 
+#Begining Light Show
 def lights(speed):
-  
+   
+#Cycles through leds  
    while (gameActive == False):
       for i in range(len(outputs)):
 
@@ -122,6 +131,7 @@ def lights(speed):
          attachInt(i,outputs[i]) 
          delay(speed)   
 
+#Not sure if i'm keep the threading 
 t = threading.Thread(target = lights, args = [light_speed])
 t.deamon = False
 t.start()
@@ -133,17 +143,11 @@ while 1:
       print("stuff")
       
       delay(1)
-      #GPIO.output(22,False)
-      #GPIO.remove_event_detect(23)      
-      #delay(1)
-      #GPIO.output(22,True)
-      #GPIO.add_event_detect(23, GPIO.FALLING, callback=printFunction, bouncetime=300)
-      
+ 
+#catch keyboard interrupt      
    except KeyboardInterrupt:
-        #t.stop()
-        os.system('sudo killall pd')
-        GPIO.cleanup()
         
-        os.system('sudo killall pd')
-
-        break
+      os.system('sudo killall pd')
+      GPIO.cleanup()
+      os.system('sudo killall python')
+      break
