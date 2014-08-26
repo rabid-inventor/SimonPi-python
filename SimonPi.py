@@ -1,6 +1,20 @@
 
 
 
+#Musical Note Notes
+#A4	     440.00
+#A#4/Bb4   466.16	
+#B4	     493.88	
+#C5	     523.25	
+#C#5/Db5   554.37
+#D5	     587.33
+#D#5/Eb5   622.25
+#E5	     659.25
+#F5	     698.46
+#F#5/Gb5   739.99
+#G5	     783.99
+#G#5/Ab5   830.61
+
 import threading
 import RPi.GPIO as GPIO   
 from time import sleep as delay
@@ -9,7 +23,11 @@ outputs = [22,23,24,25]
 light_speed = 0.1
 GPIO.setmode(GPIO.BCM)
 
-#Tunes = [
+Notes = {a:440 , aSH:466.16 , b:493.88}
+
+print(Notes.get(aSH))
+
+Tune1 = [(a,500),(aSH,500)]
 
 def printFunction(channel):
    print("Button 1 pressed!")
